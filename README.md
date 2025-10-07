@@ -67,6 +67,7 @@ python3 app.py
 - **進階篩選**: 新增依據程式語言、Git 狀態或其他元資料進行篩選的選項。
 
 ## 5. 專案檔案結構
+```bash
 project_dashboard
 ├── app.py
 ├── README.md
@@ -75,3 +76,4 @@ project_dashboard
     └── index.html
 
 2 directories, 4 files
+```
