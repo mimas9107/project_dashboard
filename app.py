@@ -4,8 +4,18 @@ import subprocess
 from collections import Counter
 from flask import Flask, jsonify, render_template, request
 
+
+envfile=open('.env','r')
+buf=envfile.readlines()
+envdata={}
+for e in buf:
+    k,v=e.strip('\n').split('=')
+    envdata[k]=v
+
+envfile.close()
+
 # --- Configuration ---
-SCAN_PATH = "/usr/local/home/mimas/myvenv01"
+SCAN_PATH = envdata['SCAN_DIR']
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -160,5 +170,5 @@ if __name__ == "__main__":
     It starts the Flask development web server.
     """
     print("Starting the Project Dashboard web server...")
-    print(f"Open your browser and go to http://127.0.0.1:5001")
-    app.run(debug=True, port=5001)
+    print(f"Open your browser and go to http://{envdata['HOST']}:{envdata['PORT']}")
+    app.run(debug=True,host=envdata['HOST'], port=envdata['PORT'])
