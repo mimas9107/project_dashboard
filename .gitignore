@@ -1,0 +1,14 @@
+*.a
+*.o
+*.exe
+*.zip
+*.gz
+*.pyc
+*.key
+*.pub
+*.bak
+*.rej
+*.orig
+.env
+node_modules/
+
