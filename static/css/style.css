@@ -1,53 +1,57 @@
-/* 專案卡片基本樣式 */
+:root {
+    --bg-dark: #121212;
+    --card-bg: #1e1e1e;
+    --text-main: #e0e0e0;
+    --text-muted: #fff0f0;
+    --accent: #0d6efd;
+    --fav-gold: #ffc107;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
 .project-card {
+    background-color: var(--card-bg);
+    border: 1px solid #333;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    border-radius: 12px;
+    transition: transform 0.2s, border-color 0.2s;
 }
 
 .project-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-5px);
+    border-color: var(--accent);
 }
 
-/* 語言標籤樣式 */
-.lang-badge {
-    font-size: 0.75rem;
-    margin-right: 4px;
-    font-weight: 500;
-    padding: 0.4em 0.8em;
-    border-radius: 6px;
-}
+.project-title { color: #fff; font-weight: bold; }
+.project-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
 
-/* 資料夾結構樹樣式 */
-.tree-list {
-    list-style: none;
-    padding-left: 1.5rem;
-    border-left: 1px dashed #dee2e6;
-    margin-top: 5px;
-}
+/* 語言標籤著色 */
+.lang-badge { border: none; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; color: #fff; }
+.lang-Python { background-color: #3572A5; }
+.lang-JavaScript { background-color: #f1e05a; color: #000; }
+.lang-Rust { background-color: #dea584; }
+.lang-Go { background-color: #00ADD8; }
+.lang-HTML { background-color: #e34c26; }
+.lang-Default { background-color: #555; }
 
-.tree-list li {
-    margin-bottom: 5px;
+/* 星號按鈕 */
+.btn-fav { background: none; border: none; font-size: 1.3rem; color: #555; transition: color 0.2s; }
+.btn-fav.active { color: var(--fav-gold); }
+
+/* 分隔線 */
+.section-divider {
+    border-top: 1px solid #333;
+    margin: 3rem 0;
     position: relative;
+    text-align: center;
+}
+.section-divider span {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-dark); padding: 0 15px; color: var(--text-muted); font-size: 0.8rem;
 }
 
-/* 樹狀圖圖示顏色 */
-.bi-folder-fill {
-    color: #ffca28; /* 資料夾黃色 */
-    margin-right: 8px;
-}
-
-.bi-file-earmark-text {
-    margin-right: 8px;
-}
-
-/* Modal 內容區塊優化 */
-#treeContent {
-    max-height: 500px;
-    overflow-y: auto;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
+#treeContent { background: #252525; padding: 15px; border-radius: 8px; color: #ccc; }
+.tree-list { list-style: none; padding-left: 1.5rem; }
