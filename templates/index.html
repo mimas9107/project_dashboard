@@ -1,277 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <!-- Custom Styles -->
-    <style>
-        body {
-            background-color: #121212;
-        }
-        .project-card {
-            transition: transform .2s ease-in-out, box-shadow .2s ease-in-out;
-            height: 100%;
-        }
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        .lang-bar {
-            display: flex;
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-            background-color: #333;
-            margin-top: auto; /* Pushes the bar to the bottom */
-        }
-        .lang-bar-segment {
-            height: 100%;
-        }
-        .lang-legend {
-            font-size: 0.75rem;
-            margin-top: 8px;
-            color: #adb5bd;
-        }
-        .legend-item {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 10px;
-        }
-        .legend-color-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-            display: inline-block;
-        }
-        .git-icon {
-            width: 16px;
-            height: 16px;
-            vertical-align: text-bottom;
-            margin-left: 8px;
-            opacity: 0.7;
-        }
-        .card-text {
-            font-size: 0.9rem;
-            color: #adb5bd;
-            flex-grow: 1; /* Allows description to take up space */
-        }
-        .card-title {
-            font-weight: 500;
-        }
-        #search-input {
-            max-width: 400px;
-        }
-    </style>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="bg-light">
 
-    <div class="container mt-4">
-        <header class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <h1 class="mb-0 me-auto">Project Dashboard</h1>
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="git-scan-switch">
-                <label class="form-check-label" for="git-scan-switch">Enable Git Status Scan</label>
+    <div class="container py-5">
+        <header class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="fw-bold"><i class="bi bi-grid-1x2-fill text-primary me-2"></i>Project Dashboard</h1>
+                <p class="text-muted mb-0">本地開發環境自動化管理工具</p>
             </div>
-            <input type="text" id="search-input" class="form-control" placeholder="Search projects...">
         </header>
-
-        <div id="loading" class="text-center text-muted" style="display: none;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+        
+        <div id="projectGrid" class="row g-4">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-3">正在掃描專案...</p>
             </div>
-            <p class="mt-2">Scanning projects...</p>
-        </div>
-
-        <div id="project-grid" class="row g-4">
-            <!-- Project cards will be inserted here -->
         </div>
     </div>
 
-    <script>
-        // Color mapping for languages for a consistent look
-        const LANG_COLORS = {
-            'Python': '#3572A5', 'JavaScript': '#F7DF1E', 'HTML': '#E34F26',
-            'CSS': '#563D7C', 'Shell': '#89E051', 'C++': '#F34B7D',
-            'C': '#555555', 'Rust': '#DEA584', 'Go': '#00ADD8',
-            'Java': '#B07219', 'Markdown': '#083fa1', 'Docker': '#384d54',
-            'Makefile': '#427819', 'C/C++': '#6e5a91'
-        };
+    <div class="modal fade" id="structureModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-folder2-open me-2"></i><span id="modalTitle"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="treeContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        const GIT_STATUS_BADGES = {
-            'Modified': { class: 'bg-warning text-dark', text: 'Modified' },
-            'Ahead': { class: 'bg-info text-dark', text: 'Ahead' },
-            'Behind': { class: 'bg-danger', text: 'Behind' },
-            'Up-to-date': { class: 'bg-success', text: 'Up-to-date' },
-            'No remote': { class: 'bg-secondary', text: 'No Remote' },
-            'Error': { class: 'bg-dark text-warning', text: 'Error' }
-        };
-
-        // Simple function to generate a color from a string
-        function stringToColor(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            let color = '#';
-            for (let i = 0; i < 3; i++) {
-                let value = (hash >> (i * 8)) & 0xFF;
-                color += ('00' + value.toString(16)).substr(-2);
-            }
-            return color;
-        }
-
-        function createLangBar(languages, sortedLangs) {
-            const langBar = document.createElement('div');
-            langBar.className = 'lang-bar';
-            sortedLangs.forEach(([lang, percentage]) => {
-                const segment = document.createElement('div');
-                segment.className = 'lang-bar-segment';
-                segment.style.width = `${percentage}%`;
-                segment.style.backgroundColor = LANG_COLORS[lang] || stringToColor(lang);
-                segment.title = `${lang}: ${percentage}%`;
-                langBar.appendChild(segment);
-            });
-            return langBar;
-        }
-
-        function createLangLegend(languages, sortedLangs) {
-            const legend = document.createElement('div');
-            legend.className = 'lang-legend';
-            sortedLangs.forEach(([lang, percentage]) => {
-                const item = document.createElement('span');
-                item.className = 'legend-item';
-                const colorDot = document.createElement('span');
-                colorDot.className = 'legend-color-dot';
-                colorDot.style.backgroundColor = LANG_COLORS[lang] || stringToColor(lang);
-                const text = document.createElement('span');
-                text.textContent = `${lang} ${percentage}%`;
-                item.appendChild(colorDot);
-                item.appendChild(text);
-                legend.appendChild(item);
-            });
-            return legend;
-        }
-
-        function createGitStatusBadge(status) {
-            const badgeInfo = GIT_STATUS_BADGES[status];
-            if (!badgeInfo) return '';
-            const badge = document.createElement('span');
-            badge.className = `badge ${badgeInfo.class} ms-2`;
-            badge.textContent = badgeInfo.text;
-            return badge;
-        }
-
-        function createProjectCard(project) {
-            const col = document.createElement('div');
-            col.className = 'col-12 col-md-6 col-lg-4 project-container';
-
-            const card = document.createElement('div');
-            card.className = 'card bg-dark text-light project-card';
-            
-            const cardBody = document.createElement('div');
-            cardBody.className = 'card-body d-flex flex-column';
-
-            const titleContainer = document.createElement('div');
-            titleContainer.className = 'd-flex align-items-center';
-
-            const title = document.createElement('h5');
-            title.className = 'card-title mb-0';
-            title.textContent = project.name;
-
-            titleContainer.appendChild(title);
-
-            if (project.has_git) {
-                if (project.git_status) {
-                    const badge = createGitStatusBadge(project.git_status);
-                    titleContainer.appendChild(badge);
-                } else {
-                    const gitIcon = `<svg class="git-icon" viewBox="0 0 16 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" fill="#f0f6fc" d="M15.698 7.287L8.712.302a1.25 1.25 0 00-1.768 0L.302 7.287a1.25 1.25 0 000 1.768l6.986 6.986a1.25 1.25 0 001.768 0l6.986-6.986a1.25 1.25 0 000-1.768zM8 1.378l6.323 6.323-1.414 1.414L8 4.122l-4.909 4.909-1.414-1.414L8 1.378zM8 15.016l-6.698-6.698 1.414-1.414L8 11.878l5.284-5.284 1.414 1.414L8 15.016z"></path></svg>`;
-                    title.innerHTML += gitIcon;
-                }
-            }
-
-            const description = document.createElement('p');
-            description.className = 'card-text mt-2';
-            description.textContent = project.description;
-
-            cardBody.appendChild(titleContainer);
-            cardBody.appendChild(description);
-            
-            if (Object.keys(project.languages).length > 0) {
-                const sortedLangs = Object.entries(project.languages).sort(([, a], [, b]) => b - a);
-                const langBar = createLangBar(project.languages, sortedLangs);
-                const langLegend = createLangLegend(project.languages, sortedLangs);
-                cardBody.appendChild(langBar);
-                cardBody.appendChild(langLegend);
-            }
-
-            card.appendChild(cardBody);
-            col.appendChild(card);
-            return col;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const projectGrid = document.getElementById('project-grid');
-            const loadingIndicator = document.getElementById('loading');
-            const searchInput = document.getElementById('search-input');
-            const gitScanSwitch = document.getElementById('git-scan-switch');
-            let allProjects = [];
-
-            function fetchAndRenderProjects() {
-                const isGitScanEnabled = gitScanSwitch.checked;
-                const apiUrl = `/api/projects?git_scan=${isGitScanEnabled}`;
-                
-                loadingIndicator.style.display = 'block';
-                projectGrid.innerHTML = '';
-
-                fetch(apiUrl)
-                    .then(response => response.json())
-                    .then(projects => {
-                        allProjects = projects;
-                        loadingIndicator.style.display = 'none';
-                        renderProjects(allProjects);
-                        // After rendering, filter based on current search term
-                        filterProjects();
-                    })
-                    .catch(error => {
-                        console.error("Failed to fetch projects:", error);
-                        loadingIndicator.innerHTML = `<div class="alert alert-danger">Error loading projects.</div>`;
-                    });
-            }
-            
-            function renderProjects(projects) {
-                projectGrid.innerHTML = '';
-                if (projects.length === 0 && loadingIndicator.style.display === 'none') {
-                    projectGrid.innerHTML = `<p class="text-muted">No projects match your search.</p>`;
-                    return;
-                }
-                projects.forEach(project => {
-                    const card = createProjectCard(project);
-                    projectGrid.appendChild(card);
-                });
-            }
-
-            function filterProjects() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const filteredProjects = allProjects.filter(p => 
-                    p.name.toLowerCase().includes(searchTerm) || 
-                    p.description.toLowerCase().includes(searchTerm)
-                );
-                renderProjects(filteredProjects);
-            }
-
-            // Event Listeners
-            gitScanSwitch.addEventListener('change', fetchAndRenderProjects);
-            searchInput.addEventListener('input', filterProjects);
-
-            // Initial load
-            fetchAndRenderProjects();
-        });
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

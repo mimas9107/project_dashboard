@@ -11,4 +11,5 @@
 *.orig
 .env
 node_modules/
+.vscode/
 

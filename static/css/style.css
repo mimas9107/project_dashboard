@@ -1,0 +1,53 @@
+/* 專案卡片基本樣式 */
+.project-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 12px;
+}
+
+.project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 語言標籤樣式 */
+.lang-badge {
+    font-size: 0.75rem;
+    margin-right: 4px;
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+    border-radius: 6px;
+}
+
+/* 資料夾結構樹樣式 */
+.tree-list {
+    list-style: none;
+    padding-left: 1.5rem;
+    border-left: 1px dashed #dee2e6;
+    margin-top: 5px;
+}
+
+.tree-list li {
+    margin-bottom: 5px;
+    position: relative;
+}
+
+/* 樹狀圖圖示顏色 */
+.bi-folder-fill {
+    color: #ffca28; /* 資料夾黃色 */
+    margin-right: 8px;
+}
+
+.bi-file-earmark-text {
+    margin-right: 8px;
+}
+
+/* Modal 內容區塊優化 */
+#treeContent {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
